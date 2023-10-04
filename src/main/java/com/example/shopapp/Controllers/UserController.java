@@ -2,7 +2,9 @@ package com.example.shopapp.Controllers;
 
 import com.example.shopapp.DTOS.UserDTO;
 import com.example.shopapp.DTOS.UserLoginDTO;
+import com.example.shopapp.Services.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -15,7 +17,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("{api.prefix}/users")
+@RequiredArgsConstructor
 public class UserController {
+    private final UserService userService;
     @PostMapping("/register")
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDTO userDTO,
                                         BindingResult result){
@@ -30,6 +34,7 @@ public class UserController {
             if (!userDTO.getPassword().equals(userDTO.getRetypePassword())) {
                 return ResponseEntity.badRequest().body("Password does not match");
             }
+            userService.createUser(userDTO);
             return ResponseEntity.ok("Register successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -40,6 +45,8 @@ public class UserController {
     public ResponseEntity<String> login (
             @Valid @RequestBody UserLoginDTO userLoginDTO
     ) {
-        return ResponseEntity.ok("Some Token");
+        //Kiem tra thong tin dang nhap va sinh token
+        String token = userService.Login(userLoginDTO.getPhoneNumber(), userLoginDTO.getPassword());
+        return ResponseEntity.ok(token);
     }
 }

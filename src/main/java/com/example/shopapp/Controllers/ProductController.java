@@ -1,7 +1,12 @@
 package com.example.shopapp.Controllers;
 
 import com.example.shopapp.DTOS.ProductDTO;
+import com.example.shopapp.DTOS.ProductImageDTO;
+import com.example.shopapp.Models.Product;
+import com.example.shopapp.Models.ProductImage;
+import com.example.shopapp.Services.ProductService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +28,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("{api.prefix}/products")
+@RequiredArgsConstructor
 public class ProductController {
-
+    private final ProductService productService;
     @GetMapping("/{id}")
     public ResponseEntity<String> getProductById(@PathVariable("id") String productId) {
         return ResponseEntity.ok("Product with ID: " + productId);
@@ -44,6 +50,7 @@ public class ProductController {
                         .toList();
                 return ResponseEntity.badRequest().body(errorMessages);
             }
+            Product newProduct = productService.createProduct(productDTO);
 
             List<MultipartFile> files = productDTO.getFiles();
             files = files == null ? new ArrayList<MultipartFile>() : files;
@@ -70,8 +77,14 @@ public class ProductController {
                         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
                                 .body("File must be an image");
                     }
+                    //Luu file va cap nhat thumbnail trong DTO
                     String fileName = storeFile(file);
-                    //Luu vao bang product_images
+                    //Luu vao doi tuong product trong DB
+                    ProductImage productImage = productService.createProductImage(
+                            newProduct.getId(),
+                            ProductImageDTO.builder()
+                                    .imageUrl(fileName)
+                                    .build());
                 }
 
             }
