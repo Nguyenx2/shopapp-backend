@@ -10,6 +10,7 @@ import com.example.shopapp.Models.ProductImage;
 import com.example.shopapp.Repositories.CategoryRepository;
 import com.example.shopapp.Repositories.ProductImageRepositories;
 import com.example.shopapp.Repositories.ProductRepository;
+import com.example.shopapp.Responses.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +33,7 @@ public class ProductService implements IProductService{
         Product newProduct = Product.builder()
                 .name(productDTO.getName())
                 .price(productDTO.getPrice())
+                .description(productDTO.getDescription())
                 .thumbnail(productDTO.getThumbnail())
                 .category(existingCategory)
                 .build();
@@ -47,10 +49,12 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public Page<Product> getAllProducts(PageRequest pageRequest) {
+    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
         //Lay danh sach san pham thep trang va gioi han
 
-        return productRepository.findAll(pageRequest);
+        return productRepository
+                .findAll(pageRequest)
+                .map(ProductResponse::fromProduct);
     }
 
     @Override
